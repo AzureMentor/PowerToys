@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class ShellPage : UserControl
     {
         /// <summary>
-        /// Delcaration for the ipc callback function.
+        /// Declaration for the ipc callback function.
         /// </summary>
         /// <param name="msg">message.</param>
         public delegate void IPCMessageCallback(string msg);
@@ -32,6 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets iPC callback function for restart as admin.
         /// </summary>
         public static IPCMessageCallback SndRestartAsAdminMsgCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets iPC callback function for checking updates.
+        /// </summary>
+        public static IPCMessageCallback CheckForUpdatesMsgCallback { get; set; }
 
         /// <summary>
         /// Gets view model.
@@ -59,19 +64,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Set Default IPC Message callback function.
         /// </summary>
-        /// <param name="implmentation">delegate function implementation.</param>
-        public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
+        /// <param name="implementation">delegate function implementation.</param>
+        public void SetDefaultSndMessageCallback(IPCMessageCallback implementation)
         {
-            DefaultSndMSGCallback = implmentation;
+            DefaultSndMSGCallback = implementation;
         }
 
         /// <summary>
         /// Set restart as admin IPC callback function.
         /// </summary>
-        /// <param name="implmentation">delegate function implementation.</param>
-        public void SetRestartAdminSndMessageCallback(IPCMessageCallback implmentation)
+        /// <param name="implementation">delegate function implementation.</param>
+        public void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
         {
-            SndRestartAsAdminMsgCallback = implmentation;
+            SndRestartAsAdminMsgCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set check for updates IPC callback function.
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
+        {
+            CheckForUpdatesMsgCallback = implementation;
         }
 
         public void SetElevationStatus(bool isElevated)

@@ -3,8 +3,10 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
+#include <common/common.h>
 #include "trace.h"
 #include "resource.h"
+#include <common/os-detection/os-detect.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -69,7 +71,7 @@ public:
   }
 
   // Return array of the names of all events that this powertoy listens for, with
-  // nullptr as the last element of the array. Nullptr can also be retured for empty
+  // nullptr as the last element of the array. Nullptr can also be returned for empty
   // list.
   virtual const wchar_t** get_events() override {
     static const wchar_t* events[] = { nullptr };
@@ -91,7 +93,7 @@ public:
     // Create a Settings object.
     PowerToysSettings::Settings settings(hinstance, get_name());
     settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
-    settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/launcher/README.md");
+    settings.set_overview_link(L"https://aka.ms/PowerToysOverview_PowerToysRun");
 
     return settings.serialize_to_buffer(buffer, buffer_size);
   }
@@ -131,13 +133,66 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
-      SHELLEXECUTEINFO sei{ sizeof(sei) };
-      sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-      sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
-      sei.nShow = SW_SHOWNORMAL;
-      ShellExecuteEx(&sei);
+      // Start PowerLauncher.exe only if the OS is 19H1 or higher
+      if (UseNewSettings())
+      {
+          unsigned long powertoys_pid = GetCurrentProcessId();
 
-      m_hProcess = sei.hProcess;
+          if (!is_process_elevated(false))
+          {
+              std::wstring executable_args = L"";
+              executable_args.append(std::to_wstring(powertoys_pid));
+
+              SHELLEXECUTEINFOW sei{ sizeof(sei) };
+              sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+              sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
+              sei.nShow = SW_SHOWNORMAL;
+              sei.lpParameters = executable_args.data();
+              ShellExecuteExW(&sei);
+
+              m_hProcess = sei.hProcess;
+          }
+          else
+          {
+              std::wstring action_runner_path = get_module_folderpath();
+
+              std::wstring params;
+              params += L"-run-non-elevated ";
+              params += L"-target modules\\launcher\\PowerLauncher.exe ";
+              params += L"-pidFile ";
+              params += POWER_LAUNCHER_PID_SHARED_FILE;
+              params += L" " + std::to_wstring(powertoys_pid) + L" ";
+
+              action_runner_path += L"\\action_runner.exe";
+              // Set up the shared file from which to retrieve the PID of PowerLauncher
+              HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
+              if (hMapFile)
+              {
+                  PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                  if (pidBuffer)
+                  {
+                      *pidBuffer = 0;
+                      m_hProcess = NULL;
+
+                      if (run_non_elevated(action_runner_path, params, pidBuffer))
+                      {
+                          const int maxRetries = 80;
+                          for (int retry = 0; retry < maxRetries; ++retry)
+                          {
+                              Sleep(50);
+                              DWORD pid = *pidBuffer;
+                              if (pid)
+                              {
+                                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                                  break;
+                              }
+                          }
+                      }
+                  }
+                  CloseHandle(hMapFile);
+              }
+          }
+      }
 
       m_enabled = true;
   }

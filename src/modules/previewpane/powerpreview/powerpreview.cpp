@@ -51,7 +51,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
     // General Settings.
     settings.set_description(GET_RESOURCE_STRING(IDS_GENERAL_DESCRIPTION));
     settings.set_icon_key(GET_RESOURCE_STRING(IDS_ICON_KEY_NAME));
-    settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/previewpane/README.md");
+    settings.set_overview_link(L"https://aka.ms/PowerToysOverview_FileExplorerAddOns");
 
     // Preview Pane: Settings Group Header.
     settings.add_header_szLarge(
@@ -61,7 +61,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
 
     for (auto previewHandler : this->m_previewHandlers)
     {
-        settings.add_bool_toogle(
+        settings.add_bool_toggle(
             previewHandler->GetToggleSettingName(),
             previewHandler->GetToggleSettingDescription(),
             previewHandler->GetToggleSettingState());
@@ -97,7 +97,7 @@ void PowerPreviewModule::enable()
     {
         if (previewHandler->GetToggleSettingState())
         {
-            // Enable all the previews with intial state set as true.
+            // Enable all the previews with initial state set as true.
             previewHandler->EnablePreview();
         }
         else

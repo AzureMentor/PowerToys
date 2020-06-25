@@ -122,21 +122,24 @@ namespace Wox.Test
             }
         }
 
-        [TestCase(Chrome, Chrome, 137)]
-        [TestCase(Chrome, LastIsChrome, 83)]
-        [TestCase(Chrome, HelpCureHopeRaiseOnMindEntityChrome, 21)]
-        [TestCase(Chrome, UninstallOrChangeProgramsOnYourComputer, 15)]
-        [TestCase(Chrome, CandyCrushSagaFromKing, 0)]
-        [TestCase("sql", MicrosoftSqlServerManagementStudio, 56)]
-        [TestCase("sql  manag", MicrosoftSqlServerManagementStudio, 79)]//double spacing intended
-        public void WhenGivenQueryStringThenShouldReturnCurrentScoring(string queryString, string compareString, int expectedScore)
+        [TestCase("vim", "Vim", "ignoreDescription", "ignore.exe", "Vim Diff", "ignoreDescription", "ignore.exe")]
+        public void WhenMultipleResults_ExactMatchingResult_ShouldHaveGreatestScore(string queryString, string firstName, string firstDescription, string firstExecutableName, string secondName, string secondDescription, string secondExecutableName)
         {
-            // When, Given
+            // Act
             var matcher = new StringMatcher();
-            var rawScore = matcher.FuzzyMatch(queryString, compareString).RawScore;
+            var firstNameMatch = matcher.FuzzyMatch(queryString, firstName).RawScore;
+            var firstDescriptionMatch = matcher.FuzzyMatch(queryString, firstDescription).RawScore;
+            var firstExecutableNameMatch = matcher.FuzzyMatch(queryString, firstExecutableName).RawScore;
 
-            // Should
-            Assert.AreEqual(expectedScore, rawScore, $"Expected score for compare string '{compareString}': {expectedScore}, Actual: {rawScore}");
+            var secondNameMatch = matcher.FuzzyMatch(queryString, secondName).RawScore;
+            var secondDescriptionMatch = matcher.FuzzyMatch(queryString, secondDescription).RawScore;
+            var secondExecutableNameMatch = matcher.FuzzyMatch(queryString, secondExecutableName).RawScore;
+
+            var firstScore = new[] { firstNameMatch, firstDescriptionMatch, firstExecutableNameMatch }.Max();
+            var secondScore = new[] { secondNameMatch, secondDescriptionMatch, secondExecutableNameMatch }.Max();
+
+            // Assert
+            Assert.IsTrue(firstScore > secondScore);
         }
 
         [TestCase("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
@@ -184,8 +187,6 @@ namespace Wox.Test
         [TestCase("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sqlserv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql servman", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
@@ -220,6 +221,21 @@ namespace Wox.Test
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
                 $"Precision Score: {(int)expectedPrecisionScore}");
+        }
+
+        [TestCase("Windows Terminal", "Windows_Terminal", "term")]
+        [TestCase("Windows Terminal", "WindowsTerminal", "term")]
+        public void FuzzyMatchingScore_ShouldBeHigher_WhenPreceedingCharacterIsSpace(string firstCompareStr, string secondCompareStr, string query)
+        {
+            // Arrange
+            var matcher = new StringMatcher();
+
+            // Act
+            var firstScore = matcher.FuzzyMatch(query, firstCompareStr).Score;
+            var secondScore = matcher.FuzzyMatch(query, secondCompareStr).Score;
+
+            // Assert
+            Assert.IsTrue(firstScore > secondScore);
         }
     }
 }

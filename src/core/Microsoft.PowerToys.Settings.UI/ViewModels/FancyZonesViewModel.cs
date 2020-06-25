@@ -43,20 +43,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             this._displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             this._zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
-            this._virtualDesktopChangeMoveWindows = Settings.Properties.FancyzonesVirtualDesktopChangeMoveWindows.Value;
             this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
             this._makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
-            this._editorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
+            this.EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
             this._zoneInActiveColor = inactiveColor != string.Empty ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
 
             string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            this._zoneBorderColor = borderColor != string.Empty ?  borderColor.ToColor() : "#FFFFFF".ToColor();
+            this._zoneBorderColor = borderColor != string.Empty ? borderColor.ToColor() : "#FFFFFF".ToColor();
 
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             this._zoneHighlightColor = highlightColor != string.Empty ? highlightColor.ToColor() : "#0078D7".ToColor();
@@ -82,7 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _moveWindowsAcrossMonitors;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
-        private bool _virtualDesktopChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
@@ -220,24 +218,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoneSetChangeMoveWindows = value;
                     Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        public bool VirtualDesktopChangeMoveWindows
-        {
-            get
-            {
-                return _virtualDesktopChangeMoveWindows;
-            }
-
-            set
-            {
-                if (value != _virtualDesktopChangeMoveWindows)
-                {
-                    _virtualDesktopChangeMoveWindows = value;
-                    Settings.Properties.FancyzonesVirtualDesktopChangeMoveWindows.Value = value;
                     RaisePropertyChanged();
                 }
             }
@@ -398,8 +378,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _editorHotkey)
                 {
-                    _editorHotkey = value;
-                    Settings.Properties.FancyzonesEditorHotkey.Value = value;
+                    if (value.IsEmpty())
+                    {
+                        _editorHotkey = new HotkeySettings(true, false, false, false, "'", 192);
+                    }
+                    else
+                    {
+                        _editorHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesEditorHotkey.Value = _editorHotkey;
                     RaisePropertyChanged();
                 }
             }

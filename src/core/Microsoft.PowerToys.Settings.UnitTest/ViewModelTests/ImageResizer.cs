@@ -68,7 +68,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void JPEGQualityLevel_ShouldSetValueToTen_WhenSuccefull()
+        public void JPEGQualityLevel_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
@@ -82,7 +82,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void PngInterlaceOption_ShouldSetValueToTen_WhenSuccefull()
+        public void PngInterlaceOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
@@ -96,7 +96,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void TiffCompressOption_ShouldSetValueToTen_WhenSuccefull()
+        public void TiffCompressOption_ShouldSetValueToTen_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
@@ -110,54 +110,22 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void FileName_ShouldUpdateValue_WhenSuccefull()
+        public void FileName_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
-            string exptectedValue = "%1 (%3)";
+            string expectedValue = "%1 (%3)";
 
             // act
-            viewModel.FileName = exptectedValue;
+            viewModel.FileName = expectedValue;
 
             // Assert
             viewModel = new ImageResizerViewModel();
-            Assert.AreEqual(exptectedValue, viewModel.FileName);
+            Assert.AreEqual(expectedValue, viewModel.FileName);
         }
 
         [TestMethod]
-        public void FileName_ShouldNOTUpdateValue_WhenNameIsInValid ()
-        {
-            // arrange
-            ImageResizerViewModel viewModel = new ImageResizerViewModel();
-            string[] invalidNames =
-            {
-                string.Empty,
-                " ",            // no name.
-                "%1",           // single name value.
-                "%7 (%5)",      // name max index exceeded.
-                "%8 (%8)",      // name max index exceeded.
-                "%5 (%3 )",     // name contains extra spaces.
-                "%5  (%3)",     // name contains extra spaces.
-                "%5 ( %3)",     // name contains extra spaces.
-                "% 5 ( %3)",     // name contains extra spaces.
-                "%5 (% 3)",     // name contains extra spaces.
-                "%5 ( %3 )",     // name contains extra spaces.
-            };
-
-            // act and Assert
-            foreach (string invalidName in invalidNames)
-            {
-                viewModel = new ImageResizerViewModel();
-                viewModel.FileName = invalidName;
-                Assert.AreNotEqual(invalidName, viewModel.FileName);
-                
-                ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-                Assert.AreNotEqual(invalidName, settings.Properties.ImageresizerFileName.Value);
-            }
-        }
-
-        [TestMethod]
-        public void KeepDateModified_ShouldUpdateValue_WhenSuccefull()
+        public void KeepDateModified_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
@@ -172,7 +140,7 @@ namespace ViewModelTests
 
 
         [TestMethod]
-        public void Encoder_ShouldUpdateValue_WhenSuccefull()
+        public void Encoder_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
@@ -187,7 +155,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AddRow_ShouldAddEmptyImageSize_WhenSuccefull()
+        public void AddRow_ShouldAddEmptyImageSize_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
@@ -201,7 +169,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void DeleteImageSize_ShouldDeleteImageSize_WhenSuccefull()
+        public void DeleteImageSize_ShouldDeleteImageSize_WhenSuccessful()
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();

@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.Plugin.WindowWalker.Components
 {
     /// <summary>
-    /// Class containg methods to control the live preview
+    /// Class containing methods to control the live preview
     /// </summary>
     internal class LivePreview
     {
@@ -15,7 +15,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Makes sure that a window is excluded from the live preview
         /// </summary>
         /// <param name="hwnd">handle to the window to exclude</param>
-        public static void SetWindowExlusionFromLivePreview(IntPtr hwnd)
+        public static void SetWindowExclusionFromLivePreview(IntPtr hwnd)
         {
             int renderPolicy = (int)InteropAndHelpers.DwmNCRenderingPolicy.Enabled;
 

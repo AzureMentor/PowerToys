@@ -157,8 +157,11 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
+            if (session == null)
+                return;
+
             ResetDefaultFancyZonesSettings(false);
-            ResetDefautZoneSettings(true);
+            ResetDefaultZoneSettings(true);
         }
 
         [ClassCleanup]
@@ -171,6 +174,9 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
+            if (session == null)
+                return;
+
             if (!isPowerToysLaunched)
             {
                 LaunchPowerToys();
@@ -195,7 +201,7 @@ namespace PowerToysTests
                 //editor has already closed
             }
 
-            ResetDefautZoneSettings(false);
+            ResetDefaultZoneSettings(false);
         }
     }
 }

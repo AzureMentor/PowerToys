@@ -43,7 +43,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Restart Wox
         /// </summary>
-        void RestarApp();
+        void RestartApp();
 
         /// <summary>
         /// Hide Wox
@@ -64,7 +64,7 @@ namespace Wox.Plugin
 
         /// <summary>
         /// Reloads any Plugins that have the 
-        /// IReloadable implemented. It refeshes
+        /// IReloadable implemented. It refreshes
         /// Plugin's in memory data with new content
         /// added by user.
         /// </summary>
@@ -114,11 +114,5 @@ namespace Wox.Plugin
         /// </summary>
         /// <returns></returns>
         List<PluginPair> GetAllPlugins();
-
-        /// <summary>
-        /// Fired after global keyboard events
-        /// if you want to hook something like Ctrl+R, you should use this event
-        /// </summary>
-        event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
     }
 }

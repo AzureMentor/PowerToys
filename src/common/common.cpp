@@ -171,17 +171,17 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     {
         return result;
     }
-    static HWND cortanda_hwnd = nullptr;
-    if (cortanda_hwnd == nullptr)
+    static HWND cortana_hwnd = nullptr;
+    if (cortana_hwnd == nullptr)
     {
         if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
             get_process_path(active_window).ends_with(L"SearchUI.exe"))
         {
-            cortanda_hwnd = active_window;
+            cortana_hwnd = active_window;
             return result;
         }
     }
-    else if (cortanda_hwnd == active_window)
+    else if (cortana_hwnd == active_window)
     {
         return result;
     }
@@ -191,7 +191,7 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     // WinKey + Up just won't maximize the window. Similary, without
     // WS_MINIMIZEBOX the window will not get minimized. A "Save As..." dialog
     // is a example of such window - it can be snapped to both sides and to
-    // all screen conrers, but will not get maximized nor minimized.
+    // all screen corners, but will not get maximized nor minimized.
     // For now, since ShortcutGuide can only disable entire "Windows Controls"
     // group, we require that the window supports all the options.
     result.snappable = ((style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX) &&
@@ -321,7 +321,7 @@ WindowState get_window_state(HWND hwnd)
 
     if (GetWindowPlacement(hwnd, &placement) == 0)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     if (placement.showCmd == SW_MINIMIZE || placement.showCmd == SW_SHOWMINIMIZED || IsIconic(hwnd))
@@ -337,7 +337,7 @@ WindowState get_window_state(HWND hwnd)
     auto rectp = get_window_pos(hwnd);
     if (!rectp)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     auto rect = *rectp;
@@ -461,7 +461,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     }
 }
 
-bool run_non_elevated(const std::wstring& file, const std::wstring& params)
+bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
@@ -510,8 +510,8 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params)
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
 
-    PROCESS_INFORMATION process_info = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    PROCESS_INFORMATION pi = { 0 };
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -520,28 +520,38 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params)
                                     nullptr,
                                     nullptr,
                                     &siex.StartupInfo,
-                                    &process_info);
-    if (process_info.hProcess)
+                                    &pi);
+    if (succeeded)
     {
-        CloseHandle(process_info.hProcess);
+        if (pi.hProcess)
+        {
+            if (returnPid)
+            {
+                *returnPid = GetProcessId(pi.hProcess);
+            }
+
+            CloseHandle(pi.hProcess);
+        }
+        if (pi.hThread)
+        {
+            CloseHandle(pi.hThread);
+        }
     }
-    if (process_info.hThread)
-    {
-        CloseHandle(process_info.hThread);
-    }
-    return succedded;
+    
+    return succeeded;
 }
 
-bool run_same_elevation(const std::wstring& file, const std::wstring& params)
+bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
     {
         executable_args += L" " + params;
     }
+    
     STARTUPINFO si = { 0 };
     PROCESS_INFORMATION pi = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -551,15 +561,25 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params)
                                     nullptr,
                                     &si,
                                     &pi);
-    if (pi.hProcess)
+
+    if (succeeded)
     {
-        CloseHandle(pi.hProcess);
+        if (pi.hProcess)
+        {
+            if (returnPid)
+            {
+                *returnPid = GetProcessId(pi.hProcess);
+            }
+
+            CloseHandle(pi.hProcess);
+        }
+
+        if (pi.hThread)
+        {
+            CloseHandle(pi.hThread);
+        }
     }
-    if (pi.hThread)
-    {
-        CloseHandle(pi.hThread);
-    }
-    return succedded;
+    return succeeded;
 }
 
 std::wstring get_process_path(HWND window) noexcept
@@ -571,7 +591,7 @@ std::wstring get_process_path(HWND window) noexcept
     if (name.length() >= app_frame_host.length() &&
         name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0)
     {
-        // It is a UWP app. We will enumarate the windows and look for one created
+        // It is a UWP app. We will enumerate the windows and look for one created
         // by something with a different PID
         DWORD new_pid = pid;
         EnumChildWindows(
